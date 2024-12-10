@@ -59,11 +59,6 @@ class DrawerMenu extends StatelessWidget {
                   ),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.settings),
-                  title: const Text('설정'),
-                  onTap: () {},
-                ),
-                ListTile(
                   leading: const Icon(Icons.logout),
                   title: const Text('로그아웃'),
                   onTap: () => _handleLogout(context),

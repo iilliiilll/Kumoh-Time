@@ -115,7 +115,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       if (value == null || value.isEmpty) {
                         return '이메일을 입력하세요';
                       }
-                      if (!value.contains('@kumoh.ac.kr')) {
+                      if (!value.contains('@naver.com')) {
                         return '올바른 이메일 형식이 아닙니다';
                       }
                       return null;

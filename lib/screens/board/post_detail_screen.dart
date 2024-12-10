@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_fb/providers/notification_provider.dart';
+import 'package:flutter_fb/screens/board/map_webview.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -46,19 +47,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       if (widget.post['location'] != null) {
         final nMapUrl =
             'nmap://place?lat=${widget.post['location']['latitude']}&lng=${widget.post['location']['longitude']}&name=${Uri.encodeComponent(widget.post['location']['address'])}';
-        final webUrl =
-            'https://map.naver.com/v5/search/${Uri.encodeComponent(widget.post['location']['address'])}/@${widget.post['location']['longitude']},${widget.post['location']['latitude']}';
 
-        final nMapUri = Uri.parse(nMapUrl);
-        if (!await launchUrl(nMapUri)) {
-          final webUri = Uri.parse(webUrl);
-          await launchUrl(webUri, mode: LaunchMode.externalApplication);
+        if (await canLaunchUrl(Uri.parse(nMapUrl))) {
+          // 네이버 지도 앱이 있는 경우
+          await launchUrl(Uri.parse(nMapUrl));
+        } else {
+          // 네이버 지도 앱이 없는 경우 웹뷰로 열기
+          if (context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MapWebView(
+                  address: widget.post['location']['address'],
+                ),
+              ),
+            );
+          }
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('지도를 열 수 없습니다.')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('지도를 여는데 실패했습니다.')),
+        );
+      }
     }
   }
 
