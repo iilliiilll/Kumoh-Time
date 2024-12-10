@@ -143,16 +143,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton(
-                      onPressed: () {},
-                      child: const Text('아이디 찾기'),
-                    ),
-                    const Text(' | '),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text('비밀번호 찾기'),
-                    ),
-                    const Text(' | '),
-                    TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -164,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: const Text('회원가입'),
                     ),
                   ],
-                ),
+                )
               ],
             ),
           ),

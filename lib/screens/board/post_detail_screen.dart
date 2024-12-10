@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_fb/providers/notification_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -181,26 +182,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         }
 
         final userDoc = await _firestore.collection('users').doc(userId).get();
-        final department = userDoc.data()?['department'] ?? '학과 정보 없음';
-        final departmentIndex = _getUserDepartmentIndex(userId, department);
+        final userData = userDoc.data()!;
+        final userName = userData['name'] ?? '이름 없음';
 
-        await _firestore
-            .collection('posts')
-            .doc(widget.post['id'])
-            .collection('comments')
-            .add({
-          'content': comment,
-          'authorId': userId,
-          'department': department,
-          'departmentIndex': departmentIndex,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
+        // 댓글 추가
 
         await _firestore.collection('posts').doc(widget.post['id']).update({
           'comments': FieldValue.increment(1),
         });
+
+        // 게시글 작성자에게 알림 추가 (자신의 게시글에 자신이 댓글을 달 때는 제외)
+        if (widget.post['authorId'] != userId) {
+          await addNotification(
+            widget.post['authorId'],
+            '새로운 댓글',
+            '$userName님이 회원님의 게시글 "${widget.post['title']}"에 댓글을 달았습니다: $comment',
+            widget.post['id'],
+          );
+        }
       } catch (e) {
         print('댓글 추가 실패: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('댓글 작성 중 오류가 발생했습니다.')),
+        );
       }
     }
   }
