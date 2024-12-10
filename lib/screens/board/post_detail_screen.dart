@@ -49,10 +49,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             'nmap://place?lat=${widget.post['location']['latitude']}&lng=${widget.post['location']['longitude']}&name=${Uri.encodeComponent(widget.post['location']['address'])}';
 
         if (await canLaunchUrl(Uri.parse(nMapUrl))) {
-          // 네이버 지도 앱이 있는 경우
           await launchUrl(Uri.parse(nMapUrl));
         } else {
-          // 네이버 지도 앱이 없는 경우 웹뷰로 열기
           if (context.mounted) {
             Navigator.push(
               context,
@@ -195,20 +193,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
         final userDoc = await _firestore.collection('users').doc(userId).get();
         final userData = userDoc.data()!;
-        final userName = userData['name'] ?? '이름 없음';
+        final department = userData['department'] ?? '학과 정보 없음';
 
-        // 댓글 추가
+        final departmentIndex = _getUserDepartmentIndex(userId, department);
+
+        await _firestore
+            .collection('posts')
+            .doc(widget.post['id'])
+            .collection('comments')
+            .add({
+          'content': comment,
+          'authorId': userId,
+          'department': department,
+          'departmentIndex': departmentIndex,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
 
         await _firestore.collection('posts').doc(widget.post['id']).update({
           'comments': FieldValue.increment(1),
         });
 
-        // 게시글 작성자에게 알림 추가 (자신의 게시글에 자신이 댓글을 달 때는 제외)
         if (widget.post['authorId'] != userId) {
           await addNotification(
             widget.post['authorId'],
             '새로운 댓글',
-            '$userName님이 회원님의 게시글 "${widget.post['title']}"에 댓글을 달았습니다: $comment',
+            '$department$departmentIndex님이 회원님의 게시글 "${widget.post['title']}"에 댓글을 달았습니다: $comment',
             widget.post['id'],
           );
         }
