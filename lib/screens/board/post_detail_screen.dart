@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_fb/providers/notification_provider.dart';
-import 'package:flutter_fb/screens/board/map_webview.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -45,22 +44,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Future<void> _launchUrl(String urlString) async {
     try {
       if (widget.post['location'] != null) {
+        // 네이버 지도 앱 URL
         final nMapUrl =
             'nmap://place?lat=${widget.post['location']['latitude']}&lng=${widget.post['location']['longitude']}&name=${Uri.encodeComponent(widget.post['location']['address'])}';
 
+        // 웹 URL
+        final webUrl =
+            'https://map.naver.com/v5/entry/place?lat=${widget.post['location']['latitude']}&lng=${widget.post['location']['longitude']}&placePath=/location';
+
         if (await canLaunchUrl(Uri.parse(nMapUrl))) {
+          // 네이버 지도 앱이 있는 경우
           await launchUrl(Uri.parse(nMapUrl));
         } else {
-          if (context.mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MapWebView(
-                  address: widget.post['location']['address'],
-                ),
-              ),
-            );
-          }
+          // 네이버 지도 앱이 없는 경우 웹 브라우저로 열기
+          await launchUrl(
+            Uri.parse(webUrl),
+            mode: LaunchMode.externalApplication,
+          );
         }
       }
     } catch (e) {
