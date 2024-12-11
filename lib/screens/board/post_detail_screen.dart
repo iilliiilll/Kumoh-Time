@@ -48,9 +48,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         final nMapUrl =
             'nmap://place?lat=${widget.post['location']['latitude']}&lng=${widget.post['location']['longitude']}&name=${Uri.encodeComponent(widget.post['location']['address'])}';
 
+        // 웹에서 검색할 주소 (도로명 주소만)
+        final addressParts = widget.post['location']['address'].split('\n');
+        final searchAddress =
+            addressParts.length > 1 ? addressParts[1] : addressParts[0];
+
         // 웹 URL
         final webUrl =
-            'https://map.naver.com/v5/entry/place?lat=${widget.post['location']['latitude']}&lng=${widget.post['location']['longitude']}&placePath=/location';
+            'https://map.naver.com/p/search/${Uri.encodeComponent(searchAddress)}';
 
         if (await canLaunchUrl(Uri.parse(nMapUrl))) {
           // 네이버 지도 앱이 있는 경우
